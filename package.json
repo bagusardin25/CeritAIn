@@ -1,9 +1,11 @@
 {
-  "name": "api-public-ai-chatbot",
+  "name": "ceritain",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "CeritAIn - Teman bercerita AI yang hangat dan penuh empati",
+  "main": "backend/server.js",
   "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
