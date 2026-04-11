@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CeritAIn - Teman Bercerita Kamu</title>
+
+    <!-- Font dari Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Bubble background hiasan -->
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+
+        <main class="chat-container">
+            <!-- HEADER -->
+            <header class="chat-header">
+                <div class="ai-avatar">
+                    <!-- SVG Icon simpel berbentuk Senyum/Bintang -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-sparkles">
+                        <path
+                            d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                    </svg>
+                </div>
+                <div class="header-info">
+                    <h1>Ceritain aja</h1>
+                    <!-- <span class="status"><span class="status-dot"></span> Selalu Di Sini Untukmu</span> -->
+                </div>
+            </header>
+
+            <!-- CHAT BOX -->
+            <div class="chat-box" id="chat-box">
+                <!-- Pesan selamat datang (Hardcoded agar langsung muncul) -->
+                <div class="message ai">
+                    <div class="bubble">
+                        Halo! Aku CeritAIn. Hari ini terasa berat atau menyenangkan? Cerita dong ke aku, aku siap
+                        dengerin kok! 😊
+                    </div>
+                </div>
+            </div>
+
+            <!-- INPUT AREA -->
+            <div class="input-area">
+                <textarea id="user-input" placeholder="Ketik ceritamu di sini..." rows="1"></textarea>
+                <!-- Tombol Send SVG -->
+                <button id="send-btn" aria-label="Send Message">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-send-horizonal">
+                        <path d="m3 3 3 9-3 9 19-9ZM6 12h16" />
+                    </svg>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

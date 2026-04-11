@@ -20,10 +20,10 @@ const AI_MODEL = (process.env.OPENAI_MODEL || "openai/gpt-4o-mini").trim();
 // Debug: Menampilkan potongan API key untuk memastikan terbaca dengan benar
 if (API_KEY.length > 14) {
     console.log(
-        `🔑 API Key terdeteksi: ${API_KEY.substring(0, 10)}...${API_KEY.substring(API_KEY.length - 4)} (${API_KEY.length} karakter)`
+        `API Key terdeteksi: ${API_KEY.substring(0, 10)}...${API_KEY.substring(API_KEY.length - 4)} (${API_KEY.length} karakter)`
     );
 } else {
-    console.log("⚠️  WARNING: API Key KOSONG atau terlalu pendek! Cek file .env Anda.");
+    console.log("WARNING: API Key KOSONG atau terlalu pendek! Cek file .env Anda.");
 }
 
 //MIDDLEWARE
@@ -46,21 +46,18 @@ Panduan perilaku:
 - Jika ditanya siapa kamu, jawab bahwa kamu adalah CeritAIn, teman AI yang siap mendengarkan cerita kapan saja
 - Batasi panjang respons agar tetap nyaman dibaca (2-4 paragraf maksimal)`;
 
-//ROUTE / ENDPOINT
+//ROUTE / ENDPOINT (STREAMING)
 app.post("/api/chat", async (req, res) => {
     try {
-        // Mengambil array "messages" dari body request yang dikirim frontend
         const { messages } = req.body;
 
-        // Validasi: pastikan messages ada dan berupa array
         if (!messages || !Array.isArray(messages)) {
             return res.status(400).json({
                 error: "Format pesan tidak valid. Kirimkan array 'messages'.",
             });
         }
 
-        // Memanggil OpenRouter API menggunakan fetch langsung
-        // (Tidak menggunakan OpenAI SDK agar lebih reliable dengan OpenRouter)
+        // Memanggil OpenRouter API dengan mode STREAMING (stream: true)
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -72,41 +69,56 @@ app.post("/api/chat", async (req, res) => {
             body: JSON.stringify({
                 model: AI_MODEL,
                 messages: [
-                    { role: "system", content: SYSTEM_PROMPT }, // Kepribadian AI
-                    ...messages, // Riwayat percakapan dari frontend
+                    { role: "system", content: SYSTEM_PROMPT },
+                    ...messages,
                 ],
-                temperature: 0.8, // Kreativitas respons (0 = kaku, 1 = sangat kreatif)
-                max_tokens: 1024, // Batas panjang respons AI
+                temperature: 0.8,
+                max_tokens: 1024,
+                stream: true, // Mengaktifkan mode streaming!
             }),
         });
 
-        // Membaca respons dari OpenRouter sebagai JSON
-        const data = await response.json();
-
-        // Cek apakah OpenRouter mengembalikan error
+        // Cek error sebelum mulai streaming
         if (!response.ok) {
-            console.error("Error dari OpenRouter:", data);
+            const errorData = await response.json();
+            console.error("Error dari OpenRouter:", errorData);
             return res.status(response.status).json({
                 error: "Maaf, terjadi kesalahan dari layanan AI.",
-                detail: data.error?.message || JSON.stringify(data),
+                detail: errorData.error?.message || JSON.stringify(errorData),
             });
         }
 
-        // Mengambil balasan AI dari respons OpenRouter
-        const reply = data.choices[0].message;
+        // Set header agar browser tahu ini adalah stream (Server-Sent Events / SSE)
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
 
-        // Mengirimkan balasan ke frontend dalam format JSON
-        res.json({
-            reply: reply, // { role: "assistant", content: "..." }
-        });
+        // Membaca stream dari OpenRouter dan meneruskannya ke frontend
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            // Decode potongan data & teruskan langsung ke frontend
+            const chunk = decoder.decode(value, { stream: true });
+            res.write(chunk);
+        }
+
+        res.end();
     } catch (error) {
-        // Jika ada error jaringan atau error tak terduga lainnya
         console.error("Error memanggil OpenRouter:", error.message);
 
-        res.status(500).json({
-            error: "Maaf, terjadi kesalahan saat memproses pesan kamu.",
-            detail: error.message,
-        });
+        // Jika header belum terkirim, kirim error JSON biasa
+        if (!res.headersSent) {
+            res.status(500).json({
+                error: "Maaf, terjadi kesalahan saat memproses pesan kamu.",
+                detail: error.message,
+            });
+        } else {
+            res.end();
+        }
     }
 });
 
@@ -117,7 +129,7 @@ app.get("/", (req, res) => {
 
 //START SERVER
 app.listen(PORT, () => {
-    console.log(`\n🚀 CeritAIn server berjalan di http://localhost:${PORT}`);
-    console.log(`📁 Menyajikan frontend dari: ${path.join(__dirname, "../frontend")}`);
-    console.log(`🤖 Model AI: ${AI_MODEL}\n`);
+    console.log(`\nCeritAIn server berjalan di http://localhost:${PORT}`);
+    console.log(`Menyajikan frontend dari: ${path.join(__dirname, "../frontend")}`);
+    console.log(`Model AI: ${AI_MODEL}\n`);
 });
