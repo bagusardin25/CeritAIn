@@ -128,8 +128,13 @@ app.get("/", (req, res) => {
 });
 
 //START SERVER
-app.listen(PORT, () => {
-    console.log(`\nCeritAIn server berjalan di http://localhost:${PORT}`);
-    console.log(`Menyajikan frontend dari: ${path.join(__dirname, "../frontend")}`);
-    console.log(`Model AI: ${AI_MODEL}\n`);
-});
+if (process.env.NODE_ENV !== "production") {
+    app.listen(PORT, () => {
+        console.log(`\nCeritAIn server berjalan di http://localhost:${PORT}`);
+        console.log(`Menyajikan frontend dari: ${path.join(__dirname, "../frontend")}`);
+        console.log(`Model AI: ${AI_MODEL}\n`);
+    });
+}
+
+// Export app untuk Vercel
+module.exports = app;
